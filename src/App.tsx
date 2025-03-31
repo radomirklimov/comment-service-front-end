@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import { v4 as uuidv4 } from "uuid";
 import { TrashIcon } from "./icons/trash";
+import axios from 'axios';
 
 interface IComment {
-  id: string;
+  id: number;
   author: string;
   text: string;
 }
+
+let commentId = 1;
 
 enum FormDataType {
   name = "name",
@@ -34,17 +36,61 @@ const Comment = ({
         <TrashIcon />
       </button>
     </div>
+
   );
 };
+
+function addToDatabase(comment: Omit<IComment, "id">): Promise<void> {
+  return fetch("http://localhost:8080/add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(comment),
+  }).then((res) => console.log("got response:", res));
+}
+
+function removeFromDatabase(id: Number){
+  return fetch("http://localhost:8080/delete", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(id),
+  }).then((res) => console.log("got response:", res));
+}
+
+function getAllFromDatabase(): Promise<Omit<IComment, "id">[]> {
+  return fetch("http://localhost:8080/get-all", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    }
+  }) 
+  .then((res) => {
+    console.log("got response:", res);
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+    return res.json();
+  });
+}
 
 function App() {
   const [comments, setComments] = useState<IComment[]>([]);
 
   const addNewComment = (comment: Omit<IComment, "id">) => {
-    setComments([...comments, { ...comment, id: uuidv4() }]);
+    setComments([...comments, { ...comment, id: commentId++ }]);
   };
 
+
   const removeComment = (id: IComment["id"]) => {
+    console.log(id)
+    removeFromDatabase(id)
+
     setComments(comments.filter((c) => c.id !== id));
   };
 
@@ -54,11 +100,27 @@ function App() {
 
     if (!author || !comment) return;
 
-    addNewComment({
+    const newComment = {
       author: author.toString(),
       text: comment.toString(),
-    });
+    };
+  
+    addNewComment(newComment);
+
+    addToDatabase(newComment);
+
+  
   };
+
+  useEffect(() => {
+    getAllFromDatabase()
+      .then((data) => {
+        setComments(data); 
+      })
+      .catch((error) => {
+        console.error("Error fetching comments:", error);
+      });
+  }, []);
 
   return (
     <main className="content">
