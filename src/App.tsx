@@ -62,7 +62,7 @@ function removeFromDatabase(id: Number){
   }).then((res) => console.log("got response:", res));
 }
 
-function getAllFromDatabase(): Promise<Omit<IComment, "id">[]> {
+function getAllFromDatabase(): Promise<IComment[]> {
   return fetch("http://localhost:8080/get-all", {
     method: "GET",
     headers: {
@@ -71,7 +71,6 @@ function getAllFromDatabase(): Promise<Omit<IComment, "id">[]> {
     }
   }) 
   .then((res) => {
-    console.log("got response:", res);
     if (!res.ok) {
       throw new Error(`HTTP error! Status: ${res.status}`);
     }
@@ -109,7 +108,6 @@ function App() {
 
     addToDatabase(newComment);
 
-  
   };
 
   useEffect(() => {
