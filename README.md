@@ -1,5 +1,3 @@
-# Commentator
+Developing the comment service for integration into websites. It can be slightly modified for different websites.
 
-Чтобы запустить приложение:
-1. Установите зависимости: `yarn` или `npm install`
-2. Запустите с помощью `yarn start` или `npm run start`
+I implemented the service using Node.js and React with TypeScript. The program sends requests to the back end and displays the data.
